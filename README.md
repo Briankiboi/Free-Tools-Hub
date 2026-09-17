@@ -4,7 +4,6 @@
 
 Every page is a self-contained HTML tool with its own clear **How it works / Privacy / Tips** notes, a shared sticky header, and a consistent card-based UI. Open the folder in a browser and every tool works offline.
 
-![Free Tools Hub](assets/icon-512.png)
 
 ---
 
