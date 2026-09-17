@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Currency Converter — Free Tools Hub</title>
+<meta name="description" content="Convert between world currencies with live exchange rates — private, free, no sign-up.">
+<link rel="icon" type="image/png" href="../assets/icon-512.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: { extend: { colors: { primary: '#C77800', primaryDark: '#A15E00', secondary: '#0E8A6C' } } }
+    }
+</script>
+<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="../assets/css/tool.css">
+</head>
+<body class="tool-page">
+<nav class="site-nav">
+    <div class="container nav-inner">
+        <a href="../index.html" class="brand" title="Back to all tools"><span class="brand-logo"><img src="../assets/icon-512.png" alt="DM Solutions Tech" width="30" height="30"></span><span class="brand-name">DM Solutions Tech</span></a>
+        <ul class="tool-nav-links">
+            <li><a href="https://briankiboi.is-a.dev/#svc-rate-section" target="_blank" rel="noopener" class="tool-nav-link">Rate Card</a></li>
+            <li><a href="https://briankiboi.is-a.dev/#projects" target="_blank" rel="noopener" class="tool-nav-link">Projects</a></li>
+            <li><a href="https://briankiboi.is-a.dev/#services" target="_blank" rel="noopener" class="tool-nav-link">My Services</a></li>
+            <li><a href="https://briankiboi.is-a.dev/#contact" target="_blank" rel="noopener" class="tool-nav-link">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+<main>
+<div class="container">
+        <a href="../index.html" class="back-link"><span class="bl-arrow">←</span><span>Back to all tools</span></a>
+<div class="tool-shell" style="max-width:720px;margin:0 auto">
+    <header class="tool-meta">
+            <span class="tool-meta-icon">💱</span>
+            <div class="tool-meta-body">
+                <h1>Currency Converter</h1>
+                <p>Convert between 40+ world currencies using live daily exchange rates. Fast, free, and private.</p>
+                <div class="tool-meta-row">
+                    <span class="tool-badge">Business</span>
+                    <span class="tool-badge tool-badge-soft">client-side</span>
+                </div>
+            </div>
+            <button type="button" class="fav-btn" data-fav title="Save to favorites" aria-label="Save to favorites">☆</button>
+        </header>
+
+    <div class="field">
+        <label for="cc-amount">Amount</label>
+        <input id="cc-amount" type="number" min="0" step="any" value="100" placeholder="Enter amount">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:end;margin-top:.5rem">
+        <div class="field"><label for="cc-from">From</label><select id="cc-from"></select></div>
+        <button type="button" id="cc-swap" class="btn btn-ghost" style="height:38px;padding:0 .7rem" title="Swap currencies" aria-label="Swap currencies">⇄</button>
+        <div class="field"><label for="cc-to">To</label><select id="cc-to"></select></div>
+    </div>
+
+    <button id="cc-convert" class="btn btn-primary btn-block">💱 Convert</button>
+
+    <div class="result-box" id="cc-result" style="display:none;text-align:center" aria-live="polite">
+        <div id="cc-eq" style="font-size:1.55rem;font-weight:800;color:var(--primary)"></div>
+        <div id="cc-rate" style="font-size:.8rem;color:var(--muted);margin-top:.4rem"></div>
+        <div id="cc-date" style="font-size:.72rem;color:var(--muted);margin-top:.15rem"></div>
+        <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.85rem">
+            <button class="btn btn-secondary" id="cc-copy">📋 Copy</button>
+        </div>
+    </div>
+
+    <p id="cc-error" style="display:none;font-size:.8rem;color:#B91C1C;background:#FEF2F2;border:1px solid #FECACA;border-radius:.5rem;padding:.6rem .8rem;margin-top:.9rem"></p>
+
+    <div class="info-note">
+        <div class="note-sec">
+            <div class="note-label"><span class="nl-ico">⚙️</span>How it works</div>
+            <p>On conversion, the tool fetches a daily snapshot of mid-market rates (every supported currency measured against the USD base) from <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">exchangerate-api.com</a>, then computes your exact pair with a cross-rate: <code>target&nbsp;÷&nbsp;source</code>. The latest snapshot is cached in this device's <code>localStorage</code>, so already-seen pairs keep converting even offline. The date shown is when that rate snapshot was last updated.</p>
+        </div>
+        <div class="note-sec">
+            <div class="note-label"><span class="nl-ico">🔒</span>Privacy</div>
+            <p>The lookup is anonymous — no account, no key. Your amount never leaves the page; only the currency symbols needed for the rate table are shared with the rate provider.</p>
+        </div>
+        <div class="note-sec">
+            <div class="note-label"><span class="nl-ico">💡</span>Tips</div>
+            <ul>
+                <li>Rates are indicative mid-market (daily); banks and card networks typically add their own margin on top.</li>
+                <li>Press <code>Enter</code> in the amount field or use the ⇄ swap button to convert without clicking Convert.</li>
+                <li>Copy the result line anywhere — paste it into a doc or send it in a message.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
+</main>
+<footer class="site-footer">
+    <div class="container">
+        <p>All tools run client-side in your browser &middot; no data leaves this machine &middot; <span data-year></span></p>
+    </div>
+</footer>
+<script src="../assets/js/app.js"></script>
+<script>
+(function(){
+    'use strict';
+    const { $, toast, copyText, toolPageInit } = ToolsApp;
+    toolPageInit('currency-converter');
+
+    const CURRENCIES = [
+        ['USD','US Dollar'],['EUR','Euro'],['GBP','British Pound'],['KES','Kenyan Shilling'],
+        ['NGN','Nigerian Naira'],['ZAR','South African Rand'],['EGP','Egyptian Pound'],
+        ['JPY','Japanese Yen'],['CNY','Chinese Yuan'],['INR','Indian Rupee'],['CAD','Canadian Dollar'],
+        ['AUD','Australian Dollar'],['CHF','Swiss Franc'],['SEK','Swedish Krona'],['NOK','Norwegian Krone'],
+        ['DKK','Danish Krone'],['PLN','Polish Zloty'],['CZK','Czech Koruna'],['HUF','Hungarian Forint'],
+        ['RON','Romanian Leu'],['BGN','Bulgarian Lev'],['TRY','Turkish Lira'],['BRL','Brazilian Real'],
+        ['MXN','Mexican Peso'],['AED','UAE Dirham'],['SAR','Saudi Riyal'],['TZS','Tanzanian Shilling'],
+        ['UGX','Ugandan Shilling'],['GHS','Ghanaian Cedi'],['ETB','Ethiopian Birr'],['RWF','Rwandan Franc'],
+        ['MWK','Malawian Kwacha'],['ZMW','Zambian Kwacha'],['MUR','Mauritian Rupee'],['LKR','Sri Lankan Rupee'],
+        ['BDT','Bangladeshi Taka'],['PKR','Pakistani Rupee'],['PHP','Philippine Peso'],['IDR','Indonesian Rupiah'],
+        ['THB','Thai Baht'],['VND','Vietnamese Dong'],['MYR','Malaysian Ringgit'],['SGD','Singapore Dollar'],
+        ['HKD','Hong Kong Dollar'],['NZD','New Zealand Dollar'],['KRW','South Korean Won'],['RUB','Russian Ruble']
+    ];
+
+    const storageKey = 'tools_cc_rates';
+    let ratesCache = loadCache();
+    let lastPair = null;
+
+    function loadCache(){
+        try { return JSON.parse(localStorage.getItem(storageKey)) || null; } catch (e) { return null; }
+    }
+    function saveCache(o){ try { localStorage.setItem(storageKey, JSON.stringify(o)); } catch (e) {} }
+
+    function fillSelect(){
+        const opts = CURRENCIES.map(([c, n]) => '<option value="' + c + '">' + c + ' — ' + n + '</option>').join('');
+        $('#cc-from').innerHTML = opts;
+        $('#cc-to').innerHTML = opts;
+        $('#cc-from').value = getDefaultFrom();
+        $('#cc-to').value = 'USD';
+    }
+
+    function getDefaultFrom(){
+        try { if (Intl.DateTimeFormat().resolvedOptions().locale === 'en-KE') return 'KES'; } catch (e) {}
+        return 'USD';
+    }
+
+    function convert(){
+        const amount = parseFloat($('#cc-amount').value);
+        const from = $('#cc-from').value;
+        const to = $('#cc-to').value;
+        const err = $('#cc-error');
+        if (isNaN(amount) || amount <= 0){ err.textContent = 'Enter a valid amount greater than zero.'; err.style.display = ''; return; }
+        err.style.display = 'none';
+
+        const cached = ratesCache;
+        if (cached && cached.rates && cached.rates[from] && cached.rates[to]){
+            showResult(amount, from, to, cached.rates[to] / cached.rates[from], cached.date, true);
+            return;
+        }
+
+        fetchUsdRates()
+            .then(data => {
+                ratesCache = { base: 'USD', date: (data.time_last_update_utc || '').replace(' +0000', '').slice(0, 16), rates: data.rates };
+                saveCache(ratesCache);
+                showResult(amount, from, to, computeRate(data, from, to), ratesCache.date, false);
+            })
+            .catch(() => {
+                err.textContent = 'Live rates unavailable right now. ' +
+                    (cached ? 'Showing last saved rates.' : 'Check your connection and retry.');
+                err.style.display = '';
+                if (cached && cached.rates && cached.rates[from] && cached.rates[to]){
+                    showResult(amount, from, to, cached.rates[to] / cached.rates[from], cached.date, true);
+                } else {
+                    $('#cc-result').style.display = 'none';
+                }
+            });
+    }
+
+    function showResult(amount, from, to, rate, date, fromCache){
+        const converted = amount * rate;
+        const fmt = n => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+        $('#cc-eq').textContent = fmt(amount) + ' ' + from + ' = ' + fmt(converted) + ' ' + to;
+        $('#cc-rate').textContent = '1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to + (fromCache ? '  · cached' : '');
+        $('#cc-date').textContent = 'Rate date: ' + (date || '—');
+        $('#cc-result').style.display = '';
+        lastPair = { amount, from, to, rate, date };
+    }
+
+    $('#cc-result').addEventListener('click', function(e){
+        if (e.target && e.target.id === 'cc-copy'){
+            copyText($('#cc-eq').textContent + ' (' + $('#cc-rate').textContent + ')', e.target);
+        }
+    });
+
+    $('#cc-swap').addEventListener('click', function(){
+        const a = $('#cc-from').value; $('#cc-from').value = $('#cc-to').value; $('#cc-to').value = a;
+        if ($('#cc-result').style.display !== 'none') convert();
+    });
+
+    $('#cc-amount').addEventListener('keydown', function(e){ if (e.key === 'Enter') convert(); });
+    $('#cc-convert').addEventListener('click', convert);
+
+    fillSelect();
+})();
+</script>
+</body>
+</html>

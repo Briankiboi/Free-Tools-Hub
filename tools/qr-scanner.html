@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR & Barcode Scanner — Free Tools Hub</title>
+<meta name="description" content="Scan QR codes and barcodes from camera or image — client-side, offline clone.">
+<link rel="icon" type="image/png" href="../assets/icon-512.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: { extend: { colors: { primary: '#C77800', primaryDark: '#A15E00', secondary: '#0E8A6C' } } }
+    }
+</script>
+<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="../assets/css/tool.css">
+</head>
+<body class="tool-page">
+
+<nav class="site-nav">
+    <div class="container nav-inner">
+        <a href="../index.html" class="brand" title="Back to all tools"><span class="brand-logo"><img src="../assets/icon-512.png" alt="DM Solutions Tech" width="30" height="30"></span><span class="brand-name">DM Solutions Tech</span></a>
+        <ul class="tool-nav-links">
+            <li><a href="https://briankiboi.is-a.dev/#svc-rate-section" target="_blank" rel="noopener" class="tool-nav-link">Rate Card</a></li>
+            <li><a href="https://briankiboi.is-a.dev/#projects" target="_blank" rel="noopener" class="tool-nav-link">Projects</a></li>
+            <li><a href="https://briankiboi.is-a.dev/#services" target="_blank" rel="noopener" class="tool-nav-link">My Services</a></li>
+            <li><a href="https://briankiboi.is-a.dev/#contact" target="_blank" rel="noopener" class="tool-nav-link">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main>
+    <div class="container">
+        <a href="../index.html" class="back-link"><span class="bl-arrow">←</span><span>Back to all tools</span></a>
+        <div class="tool-shell" style="max-width:1060px;margin:0 auto">
+            <header class="tool-meta">
+            <span class="tool-meta-icon">📷</span>
+            <div class="tool-meta-body">
+                <h1>QR & Barcode Scanner</h1>
+                <p>Scan QR codes and barcodes using your camera or by uploading an image. Uses html5-qrcode.</p>
+                <div class="tool-meta-row">
+                    <span class="tool-badge">Business</span>
+                    <span class="tool-badge tool-badge-soft">client-side</span>
+                </div>
+            </div>
+            <button type="button" class="fav-btn" data-fav title="Save to favorites" aria-label="Save to favorites">☆</button>
+        </header>
+            
+
+            <div id="qs-lib-note" style="display:none;padding:.75rem;background:#fff7ed;border:1px solid #fed7aa;border-radius:.5rem;color:#9a3412;margin-bottom:1rem;font-size:.85rem">
+                ⚠️ QR scanner library failed to load. If running from <code>file://</code>, serve via: <code>python3 -m http.server</code> then open <code>http://localhost:8000</code>
+            </div>
+
+            <div id="qs-camera-error" style="display:none;padding:.75rem;background:#fef2f2;border:1px solid #fca5a5;border-radius:.5rem;color:#b91c1c;margin-bottom:1rem;font-size:.85rem"></div>
+
+            <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+                <button class="btn btn-primary" id="qs-start">▶️ Start Camera</button>
+                <button class="btn" id="qs-stop" disabled>⏹️ Stop</button>
+            </div>
+
+            <div class="field">
+                <label for="qs-cam">Camera</label>
+                <select id="qs-cam" class="field"><option value="">Select camera…</option></select>
+            </div>
+
+            <div id="qs-reader" style="width:100%;min-height:300px;border:2px dashed var(--border);border-radius:.5rem;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-bottom:1rem;overflow:hidden"></div>
+
+            <div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
+                <h2 style="font-size:1rem;margin-bottom:.5rem">📁 Or Upload an Image</h2>
+                <input id="qs-file" type="file" accept="image/*" style="display:block;margin-bottom:.5rem">
+                <button class="btn btn-primary" id="qs-scan-file">🔍 Scan Image</button>
+            </div>
+
+            <div class="result-box" id="qs-result" style="display:none" aria-live="polite">
+                <h2>Scan Result</h2>
+                <p style="margin:.5rem 0"><strong>Type:</strong> <span id="qs-type"></span></p>
+                <p style="margin:.5rem 0"><strong>Value:</strong></p>
+                <div style="background:var(--bg,#f9fafb);padding:.75rem;border-radius:.5rem;word-break:break-all;font-family:monospace;font-size:.9rem;border:1px solid var(--border)" id="qs-value"></div>
+                <p style="font-size:.8rem;color:var(--muted);margin-top:.5rem">Scanned at: <span id="qs-time"></span></p>
+                <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap">
+                    <button class="btn btn-primary" id="qs-copy">📋 Copy Value</button>
+                    <button class="fav-btn" id="qs-fav" onclick="ToolsApp.toggleFavorite('qrscan-'+document.getElementById('qs-value').textContent)" title="Save">☆ Save</button>
+                </div>
+            </div>
+
+            <div class="info-note">
+                <div class="note-sec">
+                    <div class="note-label"><span class="nl-ico">⚙️</span>How it works</div>
+                    <p>Uses the <code>html5-qrcode</code> engine to scan your camera feed at ~10fps inside a framed scan box (pick a rear camera from the list when available), or decodes a QR/barcode from an uploaded image via <code>scanFile</code>. Whatever is detected — QR code, Data Matrix, barcode formats — is shown with its format and time.</p>
+                </div>
+                <div class="note-sec">
+                    <div class="note-label"><span class="nl-ico">🔒</span>Privacy</div>
+                    <p>Camera frames and uploaded images are decoded entirely on-device — nothing leaves your browser.</p>
+                </div>
+                <div class="note-sec">
+                    <div class="note-label"><span class="nl-ico">💡</span>Tips</div>
+                    <ul>
+                        <li>Camera access needs HTTPS or <code>localhost</code> and a permission prompt — if denied, allow it in browser settings and reload, or use the image upload method.</li>
+                        <li>Plain even lighting and a flat, close-up angle give the fastest reads.</li>
+                        <li>Click <strong>Stop camera</strong> after detection to free the camera for other apps.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p>All tools run client-side in your browser &middot; no data leaves this machine &middot; <span data-year></span></p>
+    </div>
+</footer>
+
+<script src="../assets/js/app.js"></script>
+<script src="../assets/vendor/html5-qrcode.min.js"></script>
+<script>
+(function(){
+    'use strict';
+    const { $, toast, copyText, esc, toolPageInit } = ToolsApp;
+    toolPageInit('qr-scanner');
+
+    let libOk = typeof Html5Qrcode !== 'undefined' && typeof Html5QrcodeScanner !== 'undefined';
+    if (!libOk) $('#qs-lib-note').style.display = '';
+
+    let scanner = null;
+    let scanning = false;
+
+    async function listCameras(){
+        try {
+            const cams = await Html5Qrcode.getCameras();
+            if (cams && cams.length){
+                const sel = $('#qs-cam');
+                sel.innerHTML = '<option value="">Select camera…</option>' +
+                    cams.map(c => `<option value="${esc(c.id)}">${esc(c.label || ('Camera ' + c.id))}</option>`).join('');
+            }
+        } catch(e){
+            console.warn('Camera list error:', e);
+        }
+    }
+
+    function showResult(decodedText, decodedResult){
+        $('#qs-value').textContent = decodedText;
+        $('#qs-type').textContent = (decodedResult && decodedResult.result && decodedResult.result.format)
+            ? decodedResult.result.format.formatName : 'QR / Barcode';
+        $('#qs-time').textContent = new Date().toLocaleString();
+        $('#qs-result').style.display = '';
+        toast('Code detected!');
+    }
+
+    function showError(msg){
+        const el = $('#qs-camera-error');
+        el.style.display = ''; el.textContent = msg;
+    }
+    function hideError(){ $('#qs-camera-error').style.display = 'none'; }
+
+    $('#qs-start').addEventListener('click', async function(){
+        if (!libOk){ toast('Library not loaded', 'err'); return; }
+        hideError();
+        if (!scanner) scanner = new Html5Qrcode('qs-reader');
+        scanning = true;
+        $('#qs-start').disabled = true;
+        $('#qs-stop').disabled = false;
+
+        const camId = $('#qs-cam').value;
+        const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.333 };
+        try {
+            const successCb = (decodedText, decodedResult) => showResult(decodedText, decodedResult);
+            const errCb = () => {};
+            if (camId){
+                await scanner.start(camId, config, successCb, errCb);
+            } else {
+                await scanner.start({ facingMode: 'environment' }, config, successCb, errCb);
+            }
+        } catch(e){
+            scanning = false;
+            $('#qs-start').disabled = false;
+            $('#qs-stop').disabled = true;
+            const msg = (e.message || String(e));
+            if (msg.includes('Permission') || msg.includes('permission') || msg.includes('NotAllowed')){
+                showError('Camera permission denied. Please allow camera access in your browser settings and reload the page. On some browsers you must use HTTPS or localhost.');
+            } else if (msg.includes('NotFound') || msg.includes('not found')){
+                showError('No camera found. Connect a camera or try the image upload method below.');
+            } else {
+                showError('Camera error: ' + msg);
+            }
+        }
+    });
+
+    $('#qs-stop').addEventListener('click', async function(){
+        if (!scanner || !scanning) return;
+        try {
+            await scanner.stop();
+        } catch(e){}
+        scanning = false;
+        $('#qs-start').disabled = false;
+        $('#qs-stop').disabled = true;
+        toast('Camera stopped');
+    });
+
+    $('#qs-scan-file').addEventListener('click', async function(){
+        if (!libOk){ toast('Library not loaded', 'err'); return; }
+        const file = $('#qs-file').files[0];
+        if (!file){ toast('Select an image first', 'err'); return; }
+        hideError();
+        try {
+            const qr = new Html5Qrcode('qs-reader');
+            const result = await qr.scanFile(file, true);
+            showResult(result, { result: { format: { formatName: 'QR / Barcode (image)' } } });
+            qr.clear();
+        } catch(e){
+            toast('No code found in image: ' + (e.message || e), 'err');
+        }
+    });
+
+    $('#qs-copy').addEventListener('click', function(){ copyText($('#qs-value').textContent, this); });
+
+    if (libOk) listCameras();
+})();
+</script>
+</body>
+</html>
