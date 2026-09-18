@@ -15,25 +15,23 @@
 </script>
 <link rel="stylesheet" href="../assets/css/app.css">
 <link rel="stylesheet" href="../assets/css/tool.css">
+    <link rel="stylesheet" href="../assets/css/site-header.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 <body class="tool-page">
-<nav class="site-nav">
-    <div class="container nav-inner">
-        <a href="../index.html" class="brand" title="Back to all tools"><span class="brand-logo"><img src="../assets/icon-512.png" alt="DM Solutions Tech" width="30" height="30"></span><span class="brand-name">DM Solutions Tech</span></a>
-        <ul class="tool-nav-links">
-            <li><a href="https://briankiboi.is-a.dev/#svc-rate-section" target="_blank" rel="noopener" class="tool-nav-link">Rate Card</a></li>
-            <li><a href="https://briankiboi.is-a.dev/#projects" target="_blank" rel="noopener" class="tool-nav-link">Projects</a></li>
-            <li><a href="https://briankiboi.is-a.dev/#services" target="_blank" rel="noopener" class="tool-nav-link">My Services</a></li>
-            <li><a href="https://briankiboi.is-a.dev/#contact" target="_blank" rel="noopener" class="tool-nav-link">Contact</a></li>
-        </ul>
-    </div>
-</nav>
+<div id="hub-header-slot" data-root="../"></div>
 <main>
 <div class="container">
-        <a href="../index.html" class="back-link"><span class="bl-arrow">←</span><span>Back to all tools</span></a>
+        <div class="page-crumb">
+        <a href="../index.html" class="back-link"><span class="bl-arrow"><svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20" aria-hidden="true"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect width="48" height="48" fill="white" fill-opacity="0.01"></rect> <path fill-rule="evenodd" clip-rule="evenodd" d="M44 40.8361C39.1069 34.8632 34.7617 31.4739 30.9644 30.6682C27.1671 29.8625 23.5517 29.7408 20.1182 30.303V41L4 23.5453L20.1182 7V17.167C26.4667 17.2172 31.8638 19.4948 36.3095 24C40.7553 28.5052 43.3187 34.1172 44 40.8361Z" fill="#14c86b" stroke="#000000" stroke-width="4" stroke-linejoin="round"></path> </g></svg></span><span>Back to all tools</span></a>
+        <span class="page-crumb-title">Currency Converter</span>
+        </div>
+
+
+
 <div class="tool-shell" style="max-width:720px;margin:0 auto">
     <header class="tool-meta">
-            <span class="tool-meta-icon">💱</span>
+            <span class="tool-meta-icon"><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i></span>
             <div class="tool-meta-body">
                 <h1>Currency Converter</h1>
                 <p>Convert between 40+ world currencies using live daily exchange rates. Fast, free, and private.</p>
@@ -90,12 +88,16 @@
 </div>
 </div>
 </main>
+<!-- Shared Footer -->
 <footer class="site-footer">
-    <div class="container">
-        <p>All tools run client-side in your browser &middot; no data leaves this machine &middot; <span data-year></span></p>
+    <div class="container" style="display:flex;flex-wrap:nowrap;gap:0 16px;justify-content:space-between;align-items:center;max-width:1120px;margin:0 auto;padding:10px 24px 12px;font-size:.78rem;color:#9aa3a9;border-top:1px solid rgba(255,255,255,.08);background:#020A0A">
+        <p style="margin:0">&copy; <span data-year></span> DM Solutions Tech. All rights reserved.</p>
+        <a href="https://calendly.com/briankiboi83/30min" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:8px;background:rgb(171,24,48);color:#fff;font-size:.75rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .18s">Book a Session</a>
+        <p style="margin:0;white-space:nowrap"><a href="https://briankiboi.is-a.dev" target="_blank" rel="noopener" style="color:#ffd600;text-decoration:underline;text-underline-offset:3px;font-weight:600">https://briankiboi.is-a.dev</a></p>
     </div>
 </footer>
-<script src="../assets/js/app.js"></script>
+    <script src="../assets/js/app.js"></script>
+    <script src="../assets/js/site-header.js"></script>
 <script>
 (function(){
     'use strict';
@@ -126,12 +128,28 @@
     }
     function saveCache(o){ try { localStorage.setItem(storageKey, JSON.stringify(o)); } catch (e) {} }
 
+    function fetchUsdRates(){
+        const ctrl = new AbortController();
+        const id = setTimeout(() => ctrl.abort(), 15000);
+        return fetch('https://open.er-api.com/v6/latest/USD', { signal: ctrl.signal })
+            .then(r => { clearTimeout(id); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(d => { if (!d || d.result !== 'success' || !d.rates) throw new Error('bad payload'); return d; })
+            .catch(e => { clearTimeout(id); throw e; });
+    }
+
+    function computeRate(data, from, to){
+        const f = data.rates && data.rates[from];
+        const t2 = data.rates && data.rates[to];
+        if (!f || !t2) throw new Error('missing pair');
+        return t2 / f;
+    }
+
     function fillSelect(){
         const opts = CURRENCIES.map(([c, n]) => '<option value="' + c + '">' + c + ' — ' + n + '</option>').join('');
         $('#cc-from').innerHTML = opts;
         $('#cc-to').innerHTML = opts;
-        $('#cc-from').value = getDefaultFrom();
-        $('#cc-to').value = 'USD';
+        $('#cc-from').value = 'USD';
+        $('#cc-to').value = 'KES';
     }
 
     function getDefaultFrom(){

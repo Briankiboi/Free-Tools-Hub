@@ -38,6 +38,7 @@ Every page is a self-contained HTML tool with its own clear **How it works / Pri
 | Tool | What it does |
 | --- | --- |
 | [Currency Converter](tools/currency-converter.html) | 40+ currencies, live daily rates, offline cache & swap |
+| [Document Converter](tools/document-converter.html) | DOCX→PDF, fully on-device (mammoth + html2pdf), drag & drop |
 | [QR Code Generator](tools/qr-generator.html) | Text/URL/phone into PNG or SVG, colors + error correction |
 | [QR & Barcode Scanner](tools/qr-scanner.html) | Decode from camera or image, fully on-device |
 | [Business Name Generator](tools/business-name-generator.html) | Industry + style combos with saved favorites |
