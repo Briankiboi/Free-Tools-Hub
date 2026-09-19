@@ -312,18 +312,30 @@
             const ib = CATEGORY_META[b] ? Object.keys(CATEGORY_META).indexOf(b) : 99;
             return ia - ib;
         });
-        const chips = ['all'].concat(cats);
+        const chips = ['all'].concat(cats).concat(['saved']);
         holder.innerHTML = chips.map(c => {
+            if (c === 'saved') {
+                const count = getFavorites().filter(k => hubState.data.some(t => t.key === k)).length;
+                return '<button type="button" class="chip saved-chip' + (hubState.saved ? ' active' : '') + '" data-cat="saved" title="Show your saved tools" aria-pressed="' + (hubState.saved ? 'true' : 'false') + '">'
+                    + '<i class="fa-solid fa-star" aria-hidden="true"></i>'
+                    + '<span class="chip-label">Saved</span>'
+                    + '<span class="chip-count">' + count + '</span></button>';
+            }
             const count = c === 'all' ? hubState.data.length : hubState.data.filter(t => t.category === c).length;
             const label = c === 'all' ? 'All tools' : categoryLabel(c);
             const icon = c === 'all' ? 'fa-solid fa-layer-group' : (CATEGORY_META[c] && CATEGORY_META[c].icon);
-            return '<button type="button" class="chip' + (hubState.cat === c ? ' active' : '') + '" data-cat="' + esc(c) + '" title="Show ' + esc(label) + '">'
+            return '<button type="button" class="chip' + (hubState.cat === c && !hubState.saved ? ' active' : '') + '" data-cat="' + esc(c) + '" title="Show ' + esc(label) + '">'
                 + (icon ? '<i class="' + esc(icon) + '" aria-hidden="true"></i>' : '')
                 + '<span class="chip-label">' + esc(label) + '</span>'
                 + '<span class="chip-count">' + count + '</span></button>';
         }).join('');
         $$('.chip', holder).forEach(ch => ch.addEventListener('click', () => {
-            hubState.cat = ch.dataset.cat;
+            if (ch.dataset.cat === 'saved') {
+                hubState.saved = !hubState.saved;
+            } else {
+                hubState.cat = ch.dataset.cat;
+                hubState.saved = false;
+            }
             renderHub();
         }));
     }
@@ -359,7 +371,6 @@
     function renderHub(silent) {
         const grid = $('#tools-grid');
         const heroCounter = $('#tool-count-hero');
-        const savedBtn = $('#btn-saved');
         const list = filteredTools();
         if (grid) {
             const emptyMsg = hubState.saved
@@ -369,10 +380,6 @@
             if (list.length) wireCards(grid, silent ? false : true);
         }
         if (heroCounter) heroCounter.textContent = hubState.data.length;
-        const savedCount = $('#saved-count');
-        if (savedCount) savedCount.textContent = getFavorites().filter(k => hubState.data.some(t => t.key === k)).length;
-        if (savedBtn) savedBtn.classList.toggle('active', hubState.saved);
-        if (savedBtn) savedBtn.setAttribute('aria-pressed', hubState.saved ? 'true' : 'false');
         buildChips();
     }
 

@@ -459,6 +459,12 @@ body.tool-page .tool-actions {
 @media (max-width: 920px) {
     body.tool-page .tool-split { grid-template-columns: 1fr; }
     body.tool-page .tool-split .preview-col { position: static; }
+    /* currency-converter only: converter first, calculator+split below */
+    body.cc-first-mobile .tool-split .preview-col { order: 1; }
+    body.cc-first-mobile .tool-split .entry-col { order: 2; }
+    /* receipt-generator only: form first, preview down below */
+    body.form-first-mobile .tool-split .entry-col { order: 1; }
+    body.form-first-mobile .tool-split .preview-col { order: 2; }
     body.tool-page .tool-actions {
         position: sticky;
         bottom: 0.6rem;
@@ -564,4 +570,10 @@ body.tool-page .hamburger { display: none; }
     body.tool-page .tool-meta-icon { width: 46px; height: 46px; font-size: 1.3rem; }
     body.tool-page .tool-meta h1 { font-size: 1.25rem; }
     body.tool-page .tool-shell { padding: 1.05rem; }
+
+    body.tool-page .page-crumb { flex-direction: column; align-items: flex-start; gap: .35rem; margin-bottom: 1rem; }
+    body.tool-page .page-crumb .back-link { max-width: 100%; }
+    body.tool-page .page-crumb-title { position: static; transform: none; font-size: 1.05rem; align-self: center; }
+    body.tool-page footer.site-footer .container { flex-direction: column !important; gap: .55rem !important; justify-content: center !important; text-align: center; padding: 14px 16px 16px !important; }
+    body.tool-page footer.site-footer .container p { white-space: normal !important; }
 }

@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>[x-cloak]{display:none!important}</style>
 </head>
-<body class="tool-page">
+<body class="tool-page form-first-mobile">
 
 <div id="hub-header-slot" data-root="../"></div>
 
@@ -56,14 +56,14 @@
                         <div style="font-size:1.2rem;font-weight:700" x-text="businessName || 'Your Business Name'"></div>
                         <div style="font-style:italic;color:#6b7280" x-text="tagline" x-show="tagline"></div>
                         <div x-text="address" x-show="address"></div>
-                        <div><span x-text="bizPhone" x-show="bizPhone"></span><span x-show="bizPhone && bizEmail"> | </span><span x-text="bizEmail" x-show="bizEmail"></span></div>
+                        <div><span x-text="bizPhone" x-show="bizPhone"></span><span x-show="bizPhone && bizEmail"> | </span><span x-text="bizEmail" x-show="bizEmail"></span><span x-show="taxId"> | TIN: <span x-text="taxId"></span></span></div>
                     </div>
                     <div style="text-align:center;font-weight:700;font-size:1rem;margin-bottom:.5rem">── RECEIPT ──</div>
                     <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.5rem">
                         <span x-text="'No: ' + (receiptNo || 'N/A')"></span>
-                        <span x-text="'Date: ' + receiptDate"></span>
+                        <span x-text="'Date: ' + receiptDate + (receiptTime ? '  Time: ' + receiptTime : '')"></span>
                     </div>
-                    <div style="margin-bottom:.5rem" x-show="custName"><strong>Bill To:</strong> <span x-text="custName"></span><span x-show="custPhone"> | <span x-text="custPhone"></span></span><span x-show="custEmail"> | <span x-text="custEmail"></span></span></div>
+                    <div style="margin-bottom:.5rem" x-show="custName"><strong>Bill To:</strong> <span x-text="custName"></span><span x-show="custPhone"> | <span x-text="custPhone"></span></span><span x-show="custEmail"> | <span x-text="custEmail"></span></span><span x-show="custAddress"> | <span x-text="custAddress"></span></span></div>
                     <table style="width:100%;border-collapse:collapse;margin:.5rem 0;font-size:.78rem">
                         <thead><tr style="border-bottom:1px solid #999"><th style="text-align:left;padding:.25rem 0">Item</th><th style="text-align:right;padding:.25rem 0">Qty</th><th style="text-align:right;padding:.25rem 0">Price</th><th style="text-align:right;padding:.25rem 0">Amount</th></tr></thead>
                         <tbody>
@@ -82,6 +82,13 @@
                         <div>Payment: <strong x-text="paymentMethod"></strong></div>
                         <div style="font-style:italic;margin-top:.25rem" x-text="totalInWords"></div>
                     </div>
+                    <div style="text-align:center;margin-top:.75rem;font-weight:700;font-size:.85rem">Payment received in full.</div>
+                    <div style="margin-top:.6rem;font-size:.78rem" x-show="notes"><strong>Notes:</strong> <span x-text="notes"></span></div>
+                    <div style="margin-top:1.25rem;font-size:.78rem" x-show="receivedBy">
+                        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+                            <div style="min-width:180px"><div style="border-top:1px solid #111;padding-top:.25rem" x-text="receivedBy"></div><div style="font-size:.7rem;color:#6b7280">Received by</div></div>
+                        </div>
+                    </div>
                     <div style="text-align:center;margin-top:.75rem;font-style:italic;color:#6b7280;font-size:.75rem" x-text="footerMsg || 'Thank you for your business!'" x-show="footerMsg || true"></div>
                 </div>
             </div>
@@ -91,12 +98,14 @@
             <!-- Business Info -->
             <h2 class="sec-title">Business Information</h2>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-                <div class="field"><label>Business Name</label><input type="text" x-model="businessName" placeholder="e.g. Your Business Ltd" autocomplete="organization"></div>
-                <div class="field"><label>Tagline</label><input type="text" x-model="tagline" placeholder="e.g. Your trusted partner"></div>
-                <div class="field"><label>Address</label><input type="text" x-model="address" placeholder="e.g. Nairobi, Kenya" autocomplete="street-address"></div>
+                <div class="field"><label>Business Name</label><input type="text" x-model="businessName" @input="businessName = cap($event.target.value)" placeholder="e.g. Your Business Ltd" autocomplete="organization"></div>
+                <div class="field"><label>Tagline</label><input type="text" x-model="tagline" @input="tagline = cap($event.target.value)" placeholder="e.g. Your trusted partner"></div>
+                <div class="field"><label>Address</label><input type="text" x-model="address" @input="address = cap($event.target.value)" placeholder="e.g. Nairobi, Kenya" autocomplete="street-address"></div>
                 <div class="field"><label>Phone</label><input type="tel" inputmode="tel" x-model="bizPhone" placeholder="e.g. +254 712 345 678" autocomplete="tel"></div>
                 <div class="field"><label>Email</label><input type="email" inputmode="email" autocapitalize="off" x-model="bizEmail" placeholder="e.g. info@yourbusiness.example" autocomplete="email"></div>
                 <div class="field"><label>Date</label><input type="date" x-model="receiptDate"></div>
+                <div class="field"><label>Time</label><input type="time" x-model="receiptTime"></div>
+                <div class="field"><label>Tax ID / PIN</label><input type="text" x-model="taxId" placeholder="e.g. KRA PIN A123456789B" autocomplete="off"></div>
                 <div class="field" style="grid-column:1 / -1">
                     <label>Business Logo</label>
                     <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
@@ -116,10 +125,12 @@
 
             <!-- Customer Info -->
             <h2 class="sec-title">Customer Information</h2>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
-                <div class="field"><label>Customer Name</label><input type="text" x-model="custName" placeholder="Customer name"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                <div class="field"><label>First Name</label><input type="text" x-model="custFirstName" @input="custFirstName = cap($event.target.value)" placeholder="First name" autocomplete="given-name"></div>
+                <div class="field"><label>Last Name</label><input type="text" x-model="custLastName" @input="custLastName = cap($event.target.value)" placeholder="Last name" autocomplete="family-name"></div>
                 <div class="field"><label>Phone</label><input type="tel" inputmode="tel" x-model="custPhone" placeholder="Phone number" autocomplete="tel"></div>
                 <div class="field"><label>Email</label><input type="email" inputmode="email" autocapitalize="off" x-model="custEmail" placeholder="Email address" autocomplete="email"></div>
+                <div class="field" style="grid-column:1 / -1"><label>Customer Address</label><input type="text" x-model="custAddress" placeholder="e.g. 123 Main St, Nairobi"></div>
             </div>
 
             <!-- Currency -->
@@ -151,7 +162,7 @@
                     <tbody>
                         <template x-for="(item, i) in items" :key="i">
                             <tr style="border-bottom:1px solid #f3f4f6">
-                                <td style="padding:.4rem .5rem"><input type="text" x-model="item.desc" placeholder="Item description" style="width:100%;padding:.35rem;border:1px solid #d1d5db;border-radius:4px;font-size:.85rem"></td>
+                                <td style="padding:.4rem .5rem"><input type="text" x-model="item.desc" @input="item.desc = cap($event.target.value)" placeholder="Item description" style="width:100%;padding:.35rem;border:1px solid #d1d5db;border-radius:4px;font-size:.85rem"></td>
                                 <td style="padding:.4rem .5rem"><input type="number" x-model.number="item.qty" min="1" style="width:100%;padding:.35rem;border:1px solid #d1d5db;border-radius:4px;font-size:.85rem"></td>
                                 <td style="padding:.4rem .5rem"><input type="number" x-model.number="item.price" min="0" step="0.01" style="width:100%;padding:.35rem;border:1px solid #d1d5db;border-radius:4px;font-size:.85rem"></td>
                                 <td style="padding:.4rem .5rem;font-weight:600" x-text="currencySym + fmtNum(item.qty * item.price)"></td>
@@ -194,6 +205,10 @@
                     </select>
                 </div>
                 <div class="field"><label>Footer Message</label><input type="text" x-model="footerMsg" placeholder="e.g. Thank you for your business!"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem">
+                <div class="field"><label>Received By (name)</label><input type="text" x-model="receivedBy" placeholder="e.g. Jane Mwangi"></div>
+                <div class="field"><label>Notes</label><input type="text" x-model="notes" placeholder="e.g. Reference: INV-1024, 7-day return policy"></div>
             </div>
 
             <!-- Totals -->
@@ -277,24 +292,46 @@ var CURRENCY_SYMBOLS = { KSh: 'KSh ', USD: '$ ', EUR: '€ ', GBP: '£ ' };
 function receiptData() {
     return {
         businessName: '', tagline: '', address: '', bizPhone: '', bizEmail: '',
-        custName: '', custPhone: '', custEmail: '',
+        custFirstName: '', custLastName: '', custPhone: '', custEmail: '', custAddress: '',
         receiptDate: new Date().toISOString().slice(0,10),
+        receiptTime: new Date().toTimeString().slice(0,5),
         receiptNo: 'RCP-' + String(Math.floor(Math.random()*9000)+1000),
-        currency: 'USD', taxRate: '0', discountType: 'none', discountValue: 0,
+        currency: 'KSh', taxRate: '0', discountType: 'none', discountValue: 0,
         paymentMethod: 'Cash', footerMsg: 'Thank you for your business!',
+        taxId: '', receivedBy: '', notes: '',
         items: [{ desc: '', qty: 1, price: 0 }],
         showPreview: true,
-        logoDataUrl: '', logoName: '',
+        logoDataUrl: '', logoName: '', logoPdfUrl: '', logoW: 0, logoH: 0,
         onLogo(ev) {
             var f = ev.target.files && ev.target.files[0];
             if (!f) return;
             if (f.size > 2*1024*1024) { window.ToolsApp.toast('Logo too large (max 2MB)', 'err'); ev.target.value=''; return; }
             var self = this;
             var rd = new FileReader();
-            rd.onload = function(e) { self.logoDataUrl = e.target.result; self.logoName = f.name; };
+            rd.onload = function(e) {
+                self.logoDataUrl = e.target.result;
+                self.logoName = f.name;
+                var img = new Image();
+                img.onload = function() {
+                    self.logoW = img.naturalWidth || 1;
+                    self.logoH = img.naturalHeight || 1;
+                    if (self.logoDataUrl.indexOf('data:image/svg') === 0) {
+                        var c = document.createElement('canvas');
+                        var scl = Math.min(800 / self.logoW, 300 / self.logoH, 3) || 2;
+                        c.width = Math.max(1, Math.round(self.logoW * scl));
+                        c.height = Math.max(1, Math.round(self.logoH * scl));
+                        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                        self.logoPdfUrl = c.toDataURL('image/png');
+                    } else {
+                        self.logoPdfUrl = self.logoDataUrl;
+                    }
+                };
+                img.onerror = function() { self.logoW = 0; self.logoH = 0; };
+                img.src = self.logoDataUrl;
+            };
             rd.readAsDataURL(f);
         },
-        clearLogo() { this.logoDataUrl = ''; this.logoName = ''; },
+        clearLogo() { this.logoDataUrl = ''; this.logoName = ''; this.logoPdfUrl = ''; this.logoW = 0; this.logoH = 0; },
         addItem() { this.items.push({ desc: '', qty: 1, price: 0 }); },
         removeItem(i) { if (this.items.length > 1) this.items.splice(i, 1); },
         get subtotal() { return this.items.reduce(function(s, it) { return s + (it.qty * it.price); }, 0); },
@@ -307,7 +344,10 @@ function receiptData() {
         get total() { return Math.max(0, this.subtotal - this.discountAmt + this.taxAmt); },
         get currencySym() { return CURRENCY_SYMBOLS[this.currency] || ''; },
         get totalInWords() { return numberToWords(this.total, CURRENCY_NAMES[this.currency] || this.currency); },
+        get custName() { return [this.custFirstName, this.custLastName].filter(Boolean).join(' '); },
+        get custInitials() { return [this.custFirstName, this.custLastName].map(function(n){return String(n||'').charAt(0).toUpperCase();}).join(''); },
         fmtNum(v) { return Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+        cap(v) { v = String(v || ''); return v.charAt(0).toUpperCase() + v.slice(1); },
         init() { window.ToolsApp.toolPageInit('receipt-generator'); },
         copySummary() {
             var self = this;
@@ -345,9 +385,15 @@ function receiptData() {
             var y = 18;
             if (self.logoDataUrl) {
                 try {
-                    var lfmt = self.logoDataUrl.indexOf('data:image/svg') === 0 ? 'SVG' : self.logoDataUrl.indexOf('data:image/jpeg') === 0 ? 'JPEG' : 'PNG';
-                    doc.addImage(self.logoDataUrl, lfmt, pw/2 - 20, y, 40, 14);
-                    y += 16;
+                    var lw = self.logoW || 1, lh = self.logoH || 1;
+                    var boxW = 40, boxH = 14;
+                    var ratio = lw / lh || 1;
+                    var drawW = boxW, drawH = clamp01(boxW / ratio);
+                    if (drawH > boxH) { drawH = boxH; drawW = clamp01(boxH * ratio); }
+                    var url = self.logoPdfUrl || self.logoDataUrl;
+                    var lfmt = url.indexOf('data:image/jpeg') === 0 ? 'JPEG' : 'PNG';
+                    doc.addImage(url, lfmt, pw/2 - drawW/2, y, drawW, drawH);
+                    y += Math.max(drawH + 2, 6);
                 } catch (e) {}
             }
             var cs = self.currencySym.trim();
@@ -359,12 +405,14 @@ function receiptData() {
             if (self.tagline) { center(self.tagline, 9, 'italic'); y += 5; }
             if (self.address) { center(self.address, 9); y += 5; }
             var contact = [self.bizPhone, self.bizEmail].filter(Boolean).join(' | ');
+            if (self.taxId) { contact = [contact, 'TIN: ' + self.taxId].filter(Boolean).join(' | '); }
             if (contact) { center(contact, 8); y += 5; }
             y += 2;
             doc.setDrawColor(180); doc.line(18, y, pw - 18, y); y += 7;
             center('RECEIPT', 13, 'bold'); y += 7;
-            left('No: ' + (self.receiptNo || 'N/A'), 8); right('Date: ' + self.receiptDate, 8); y += 6;
+            left('No: ' + (self.receiptNo || 'N/A'), 8); right('Date: ' + self.receiptDate + (self.receiptTime ? '  Time: ' + self.receiptTime : ''), 8); y += 6;
             if (self.custName) { left('Bill To: ' + self.custName, 8); y += 5; }
+            if (self.custAddress) { left(self.custAddress, 7); y += 5; }
             if (self.custPhone || self.custEmail) { left([self.custPhone, self.custEmail].filter(Boolean).join(' | '), 7); y += 5; }
             y += 2;
             doc.setDrawColor(150); doc.line(18, y, pw - 18, y); y += 5;
@@ -396,6 +444,8 @@ function receiptData() {
             var wordLines = doc.splitTextToSize(words, pw - 36);
             doc.text(wordLines, 18, y); y += wordLines.length * 4 + 4;
             if (self.footerMsg) { doc.setFont('helvetica', 'italic'); doc.setTextColor(100); center(self.footerMsg, 8); doc.setTextColor(0); }
+            if (self.notes) { y += 3; doc.setFont('helvetica', 'normal'); doc.setTextColor(60); left('Notes: ' + self.notes, 7); doc.setTextColor(0); }
+            if (self.receivedBy) { y += 7; doc.line(18, y, 60, y); right('Received by: ' + self.receivedBy, 7); y += 5; }
             doc.save((self.receiptNo || 'receipt') + '.pdf');
             window.ToolsApp.toast('PDF downloaded!');
         }
